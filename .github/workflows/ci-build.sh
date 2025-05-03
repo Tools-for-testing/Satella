@@ -82,17 +82,29 @@ cd build/package
 tar czf ../data.tar.gz ./*
 cd ../..
 
-# Look for GNU ar (installed from brew)
-if command -v gar &> /dev/null; then
-    echo "Creating .deb with GNU ar command..."
+# Look for GNU ar from binutils (usually installed as gar, gnutools ar, or ar)
+AR_COMMAND=""
+# Try several possible names for GNU ar
+for cmd in "gar" "gnutools ar" "gnutools-ar" "gar" "/opt/homebrew/opt/binutils/bin/ar"; do
+    if command -v $cmd &> /dev/null; then
+        AR_COMMAND="$cmd"
+        break
+    fi
+done
+
+# If we found GNU ar in binutils
+if [ ! -z "$AR_COMMAND" ]; then
+    echo "Creating .deb with GNU ar command: $AR_COMMAND"
     cd build
-    gar -r ../packages/${PACKAGE_FILENAME} debian-binary control.tar.gz data.tar.gz
+    $AR_COMMAND -r ../packages/${PACKAGE_FILENAME} debian-binary control.tar.gz data.tar.gz
     cd ..
+# Fall back to system ar
 elif command -v ar &> /dev/null; then
     echo "Creating .deb with system ar command..."
     cd build
     ar -r ../packages/${PACKAGE_FILENAME} debian-binary control.tar.gz data.tar.gz
     cd ..
+# Last resort - just use tar
 else
     echo "ar command not found, using tar as fallback..."
     # Simple alternative - just create a tarball with the .deb extension
