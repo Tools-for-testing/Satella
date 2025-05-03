@@ -1,168 +1,169 @@
-# Codebase Enhancement Instructions for Production-Grade iOS dylib
+# Satella Repository Codebase Upgrade Instructions
 
-This document outlines the requirements and guidelines for analyzing and enhancing an existing codebase to produce a robust, production-grade dynamic library (dylib) compatible with iOS versions 16 to 18 and above. All modifications must adhere to strict production standards, ensuring reliability, compatibility, and performance. Follow these instructions meticulously to ensure the codebase meets real-world requirements.
+## Overview
 
-## Objective
+This document outlines the requirements and guidelines for upgrading the Satella repository codebase to ensure it is production-grade, robust, reliable, and fully compatible with iOS 16 to 18 and above, including non-jailbroken devices. The goal is to enhance the dynamic library (dylib) while maintaining compatibility, improving performance, and adhering to best practices for production-level code.
 
-The goal is to:
-1. Analyze the existing codebase to understand its purpose, functionality, and structure.
-2. Identify areas for improvement to enhance reliability, robustness, and performance.
-3. Implement production-grade enhancements without breaking existing logic.
-4. Ensure full compatibility with iOS 16, 17, 18, and future versions.
-5. Add necessary dependencies, configurations, or tools to support the dylib's functionality.
-6. Deliver complete, production-ready code that adheres to best practices.
+## Repository Context
+
+The Satella repository is assumed to be a dynamic library (dylib) project targeting iOS applications, likely for in-app purchase (IAP) emulation or related functionality. The codebase must be analyzed thoroughly to understand its structure, dependencies, and logic before making improvements. All changes must enhance the existing functionality without breaking compatibility or introducing regressions.
 
 ## General Guidelines
 
-Adhere to the following rules for all code-related tasks. These rules ensure consistency and quality across the codebase.
+The following rules must be strictly adhered to for all code-related tasks:
 
-### 1. Provide Full, Production-Level Code
-- **Requirement**: Always provide complete, robust, production-level code when adding or modifying code.
-- **Details**:
-  - Do not include stub code, partial implementations, or simplified code.
-  - Ensure all code is fully functional, adheres to real-world logic, and follows industry-standard best practices.
-  - Include error handling, logging, and performance optimizations as appropriate for production environments.
-  - Example: If adding a networking module, include full HTTP request handling, retry logic, timeout configurations, and proper error propagation.
+1. **Production-Level Code**: Provide complete, robust, production-level code for all additions or modifications. Do not include stub code, partial implementations, or simplified code. Ensure all code adheres to real-world logic and best practices.
+2. **Real Files Only**: Use only real, existing files from the repository. Do not create stub files, placeholder files, or simplified files. Download or access any missing files necessary to ensure the code compiles and runs successfully.
+3. **Avoid Simplified Code**: Never include simplified code or files. Remove any previously added simplified code or files and replace them with complete, production-ready implementations that reflect real logic and functionality.
+4. **Issue Resolution**: Address each issue provided one at a time, in the order specified. Do not skip any issues. Provide a complete, robust, production-ready fix for each issue before moving to the next.
+5. **Repository Analysis**: When analyzing the codebase, thoroughly examine every file in the repository. Ensure all changes or suggestions are based on a comprehensive understanding of the full codebase.
+6. **Rule Adherence**: Store these rules for reference and apply them consistently across all tasks.
 
-### 2. Use Real, Existing Files
-- **Requirement**: Work only with real, existing files in the codebase.
-- **Details**:
-  - Do not create stub files, placeholder files, or simplified files to satisfy requirements.
-  - If a required file is missing, download or access the necessary file to ensure the code compiles and runs successfully.
-  - Verify that all file references (e.g., headers, resources, or dependencies) exist and are correctly integrated.
-  - Example: If a `.h` file references a missing `.m` implementation, locate or create the complete implementation based on the codebase's needs.
-
-### 3. Avoid Simplified Code
-- **Requirement**: Never include simplified code or files in responses.
-- **Details**:
-  - Remove any previously added simplified code or files and replace them with complete, production-ready implementations.
-  - Ensure all code reflects real logic and functionality, avoiding placeholders or minimal viable implementations.
-  - Example: Instead of a basic `NSLog` for debugging, implement a proper logging framework like `os_log` with configurable log levels.
-
-### 4. Issue Resolution
-- **Requirement**: Address each issue provided by the user one at a time, in the order specified.
-- **Details**:
-  - Do not skip any issues.
-  - Provide a complete, robust, production-ready fix for each issue before moving to the next.
-  - Validate each fix to ensure it does not introduce regressions or break existing functionality.
-  - Example: If an issue involves a memory leak, analyze the root cause, implement a fix (e.g., using ARC correctly), and verify with Instruments.
-
-### 5. Repository Analysis
-- **Requirement**: When instructed to analyze the codebase (e.g., "look through all the files" or "analyze the entire code base"), thoroughly examine every file in the repository.
-- **Details**:
-  - Perform a comprehensive analysis of the codebase to understand its structure, dependencies, and functionality.
-  - Ensure all changes or suggestions are based on a complete understanding of the codebase.
-  - Identify potential issues, such as deprecated APIs, missing error handling, or performance bottlenecks, during analysis.
-  - Example: If a file references an outdated iOS API, flag it and suggest a modern replacement compatible with iOS 16–18.
-
-### 6. Rule Adherence
-- **Requirement**: Strictly follow all rules outlined above for every code-related task.
-- **Details**:
-  - Store these rules for reference and apply them consistently across all tasks.
-  - Regularly validate that all code contributions meet these standards before submission.
-  - If unsure about a requirement, seek clarification rather than deviating from these guidelines.
-
-## Specific Requirements for the iOS dylib
+## Specific Requirements
 
 ### 1. Codebase Analysis
-- **Task**: Analyze the entire codebase to determine its purpose and functionality.
+- **Task**: Perform a comprehensive analysis of the Satella repository to identify its purpose, structure, and functionality.
 - **Steps**:
-  - Review all files (e.g., `.h`, `.m`, `.swift`, `Info.plist`, build scripts, etc.) to understand the dylib's role (e.g., system utility, UI extension, networking layer).
-  - Identify key components, such as entry points, public APIs, and dependencies.
-  - Document the current architecture, including any frameworks, libraries, or system dependencies.
-  - Flag any potential issues, such as deprecated APIs, missing documentation, or incomplete error handling.
-- **Output**:
-  - A summary of the codebase's purpose (e.g., "The dylib provides a runtime hooking mechanism for iOS apps").
-  - A list of identified components and their roles.
-  - A list of potential issues or areas for improvement.
+  - Clone the Satella repository from GitHub (ensure the latest commit is used).
+  - Analyze all files, including source code (`.m`, `.h`, `.c`, `.cpp`), build scripts (e.g., `Makefile`), configuration files (e.g., `plist`), and documentation.
+  - Identify the core components, such as the dylib's entry points, hooks, or patches applied to iOS applications.
+  - Document the dependencies, including any third-party libraries or frameworks.
+  - Understand the logic for IAP emulation or other functionality, focusing on how it interacts with iOS APIs and non-jailbroken environments.
+- **Output**: Provide a summary of the codebase, including:
+  - Purpose (e.g., IAP emulation, payment processing bypass).
+  - Key components and their roles.
+  - Current iOS compatibility (e.g., SDK versions, deployment targets).
+  - Existing dependencies and their versions.
+  - Potential areas for improvement (e.g., outdated APIs, missing error handling).
 
-### 2. Compatibility with iOS 16–18 and Above
-- **Task**: Ensure the dylib is fully compatible with iOS 16, 17, 18, and future versions.
+### 2. Compatibility with iOS 16 to 18 and Above
+- **Task**: Ensure the codebase is fully compatible with iOS 16, 17, 18, and future versions, including non-jailbroken devices.
 - **Steps**:
-  - Audit the codebase for deprecated APIs (e.g., using Xcode's deprecation warnings or Apple’s documentation).
-  - Replace deprecated APIs with modern equivalents (e.g., use `URLSession` instead of `NSURLConnection`).
-  - Verify that all code adheres to Apple’s guidelines for backward and forward compatibility.
-  - Test the dylib on iOS 16, 17, and 18 simulators/devices to confirm functionality.
-  - Add conditional checks for OS versions if necessary (e.g., `if (@available(iOS 17, *))`).
-- **Output**:
-  - A list of replaced APIs and their modern equivalents.
-  - Confirmation of successful testing across iOS 16–18.
+  - Update the deployment target to iOS 16.0 or higher in the build configuration (e.g., `Info.plist` or Xcode project settings).
+  - Replace deprecated APIs with modern equivalents (e.g., use `StoreKit 2` if applicable for IAP-related functionality).
+  - Ensure compatibility with non-jailbroken environments by avoiding jailbreak-specific techniques (e.g., `substrate` hooks, `libhooker`) unless they are conditionally supported.
+  - Test for compatibility with ARM64 and ARM64e architectures.
+  - Add runtime checks for iOS version-specific features to prevent crashes on newer or older systems.
+- **Best Practices**:
+  - Use `#available` checks in Objective-C/Swift for version-specific code.
+  - Implement fallback mechanisms for older iOS versions where necessary.
+  - Ensure the dylib is signed correctly for non-jailbroken devices (e.g., via entitlements or developer certificates).
 
-### 3. Enhancements for Reliability and Robustness
-- **Task**: Improve the codebase to make it more reliable, robust, and production-grade.
+### 3. Production-Grade Enhancements
+- **Task**: Improve the codebase to meet production-grade standards, enhancing reliability, robustness, and performance.
 - **Steps**:
-  - **Error Handling**: Add comprehensive error handling for all operations (e.g., try-catch blocks, NSError propagation).
-  - **Logging**: Implement a production-grade logging system (e.g., `os_log` or a third-party library like CocoaLumberjack).
-  - **Memory Management**: Use ARC correctly and verify no memory leaks with Instruments.
-  - **Thread Safety**: Ensure thread-safe operations, especially for shared resources or concurrent tasks.
-  - **Performance**: Optimize critical paths (e.g., reduce I/O operations, cache results where appropriate).
-  - **Security**: Harden the dylib against common vulnerabilities (e.g., secure data storage, input validation).
-  - **Documentation**: Add detailed comments and API documentation using Xcode’s documentation format (e.g., `///` comments).
-- **Output**:
-  - A list of implemented enhancements with explanations (e.g., "Added thread-safe singleton for resource access").
-  - Updated code files with all changes applied.
+  - **Code Quality**:
+    - Refactor code to follow modern Objective-C or Swift best practices (e.g., use `@property` for safer access, adopt ARC fully if not already done).
+    - Add comprehensive error handling for all API calls, network requests, and file operations.
+    - Implement logging with a configurable verbosity level (e.g., using `os_log` or a third-party library like `CocoaLumberjack`).
+    - Add unit tests using XCTest to cover critical functionality (e.g., IAP transaction handling).
+  - **Security**:
+    - Harden the dylib against reverse engineering (e.g., obfuscate sensitive strings, use runtime encryption for critical data).
+    - Validate all inputs to prevent crashes or exploits (e.g., sanitize receipt data, check for null pointers).
+    - Ensure compliance with App Store guidelines for non-jailbroken use (e.g., avoid private APIs).
+  - **Performance**:
+    - Optimize hooks or patches to minimize runtime overhead (e.g., use efficient method swizzling techniques).
+    - Cache frequently accessed data (e.g., receipt validation results) to reduce redundant computations.
+    - Profile the dylib using Instruments to identify and fix performance bottlenecks.
+  - **Documentation**:
+    - Add inline comments for complex logic.
+    - Update or create a `README.md` with clear setup instructions, dependencies, and usage examples.
+    - Generate API documentation using tools like `jazzy` or `appledoc` if Swift or Objective-C is used.
 
 ### 4. Dependency Management
-- **Task**: Add or update dependencies to support the dylib’s functionality.
+- **Task**: Add or update dependencies to support new features or improve reliability.
 - **Steps**:
-  - Identify missing dependencies required for production use (e.g., a logging framework, testing library, or build tool).
-  - Integrate dependencies using a package manager like CocoaPods, Swift Package Manager, or Carthage.
-  - Ensure all dependencies are compatible with iOS 16–18 and actively maintained.
-  - Update build scripts (e.g., Xcode project or `Podfile`) to include new dependencies.
-  - Validate that dependencies do not introduce security risks or performance issues.
-- **Output**:
-  - A list of added dependencies with their versions and purposes.
-  - Updated build configuration files (e.g., `Podfile`, `Package.swift`).
+  - Identify outdated dependencies in the codebase (e.g., check versions in `Podfile`, `Cartfile`, or manual includes).
+  - Update to the latest compatible versions, ensuring iOS 16+ compatibility.
+  - Consider adding new dependencies for enhanced functionality, such as:
+    - `CocoaLumberjack` for advanced logging.
+    - `Alamofire` for network requests (if applicable).
+    - `CryptoSwift` for encryption tasks.
+  - Use a dependency manager (e.g., CocoaPods, Swift Package Manager) to streamline integration.
+  - Document all dependencies in the `README.md`, including installation instructions.
+- **Best Practices**:
+  - Pin dependency versions to avoid breaking changes.
+  - Test dependencies in non-jailbroken environments to ensure compatibility.
 
-### 5. Production-Grade Code Requirements
-- **Task**: Ensure all new or modified code is production-grade.
+### 5. Non-Jailbroken Compatibility
+- **Task**: Ensure the dylib functions seamlessly on non-jailbroken devices.
 - **Steps**:
-  - Write complete implementations for all features, avoiding stubs or placeholders.
-  - Follow Apple’s Human Interface Guidelines and coding standards (e.g., Objective-C/Swift style guides).
-  - Include unit tests for new functionality using XCTest or a third-party framework like Quick/Nimble.
-  - Add integration tests to verify the dylib’s behavior in real-world scenarios.
-  - Use static analysis tools (e.g., Xcode’s Analyzer, SwiftLint) to catch potential issues.
-  - Ensure the dylib is optimized for size and performance (e.g., minimize binary size, reduce startup time).
-- **Output**:
-  - Updated code files with production-grade implementations.
-  - A test suite covering new and existing functionality.
-  - A report from static analysis tools confirming code quality.
+  - Replace jailbreak-specific techniques (e.g., `Cydia Substrate`, `libhooker`) with alternative approaches, such as:
+    - Runtime method swizzling using Objective-C runtime APIs.
+    - Dynamic library injection via legitimate means (e.g., embedded frameworks).
+  - Ensure the dylib can be loaded without requiring a jailbroken environment (e.g., via app extensions or developer-signed binaries).
+  - Test the dylib in a sandboxed environment to verify compliance with App Store restrictions.
+  - Add conditional logic to detect jailbroken vs. non-jailbroken environments and adjust behavior accordingly.
+- **Best Practices**:
+  - Avoid using private APIs or undocumented behaviors.
+  - Use entitlements sparingly and only as needed for legitimate functionality.
+  - Test on physical devices running iOS 16, 17, and 18 to confirm compatibility.
 
-### 6. Maintaining Existing Logic
-- **Task**: Ensure all enhancements preserve the existing logic and functionality.
+### 6. Build and Deployment
+- **Task**: Enhance the build process to ensure reliability and ease of deployment.
 - **Steps**:
-  - Before making changes, validate the current behavior with tests or manual verification.
-  - Refactor code only when necessary, preserving the original intent of each component.
-  - If modifying a critical section, add regression tests to ensure no breaking changes.
-  - Document any changes that alter behavior, even if intentional (e.g., performance optimizations).
-- **Output**:
-  - A list of modified files with explanations of changes.
-  - Confirmation that existing functionality remains intact.
+  - Update the `Makefile` or Xcode project to support modern build tools (e.g., `xcodebuild`, `cmake`).
+  - Add scripts for automated building, testing, and signing (e.g., `fastlane` integration).
+  - Ensure the dylib is compiled with optimizations enabled (`-O2` or equivalent).
+  - Create a CI/CD pipeline configuration (e.g., GitHub Actions) to run tests and build the dylib on each commit.
+  - Package the dylib with clear versioning (e.g., semantic versioning) and distribution instructions.
+- **Best Practices**:
+  - Include build-time checks for missing dependencies or misconfigurations.
+  - Provide a release checklist in the `README.md` for developers.
+
+### 7. Testing and Validation
+- **Task**: Implement comprehensive testing to ensure reliability and compatibility.
+- **Steps**:
+  - Write unit tests for all critical components (e.g., IAP transaction processing, receipt validation).
+  - Create integration tests to simulate real-world usage (e.g., mock StoreKit transactions).
+  - Test on multiple iOS versions (16, 17, 18) and device types (iPhone, iPad).
+  - Use tools like `XCUITest` for UI-related testing if the dylib interacts with app interfaces.
+  - Validate non-jailbroken compatibility by running tests in a clean, sandboxed environment.
+- **Best Practices**:
+  - Aim for at least 80% code coverage in unit tests.
+  - Automate test execution via CI/CD.
+  - Document test setup and execution instructions in the `README.md`.
 
 ## Deliverables
 
-Upon completion, provide the following:
-1. **Codebase Summary**:
-   - A detailed description of the dylib’s purpose, architecture, and key components.
-   - A list of identified issues and their resolutions.
-2. **Enhanced Codebase**:
-   - Updated source files with all enhancements applied.
-   - New or modified build scripts, configuration files, and dependencies.
-3. **Test Suite**:
-   - Unit and integration tests covering new and existing functionality.
-   - Instructions for running tests.
+1. **Updated Codebase**:
+   - All modified or added files must be production-grade, fully implemented, and compatible with iOS 16 to 18 and above.
+   - Include new dependencies, build scripts, and documentation as needed.
+
+2. **Analysis Report**:
+   - A detailed summary of the codebase analysis, including purpose, structure, and identified improvements.
+   - List of dependencies and their roles.
+
+3. **Changelog**:
+   - A `CHANGELOG.md` file documenting all changes, including fixes, enhancements, and new features.
+   - Follow semantic versioning for releases.
+
 4. **Documentation**:
-   - Updated API documentation within the code.
-   - A high-level overview of the changes and their impact.
-5. **Validation Report**:
-   - Confirmation of compatibility with iOS 16–18.
-   - Results from static analysis, performance testing, and security audits.
+   - Updated `README.md` with setup, build, and usage instructions.
+   - API documentation for public interfaces (if applicable).
+   - Inline comments for complex logic.
+
+## Constraints
+
+- **Compatibility**: Must support iOS 16 to 18 and above, including non-jailbroken devices.
+- **No Breaking Changes**: All enhancements must preserve existing functionality unless explicitly requested.
+- **Production-Grade**: All code must be robust, secure, and optimized for real-world use.
+- **No Simplified Code**: Avoid placeholders, stubs, or incomplete implementations.
+- **Repository Integrity**: Only use real files from the Satella repository or necessary external dependencies.
 
 ## Notes
-- If any clarification is needed regarding the codebase or requirements, pause and request additional details.
-- Store these instructions for reference and apply them to all future code-related tasks.
-- Ensure all changes align with the goal of producing a production-grade dylib ready for real-world deployment.
+
+- If the Satella repository involves ethically or legally sensitive functionality (e.g., bypassing IAP protections), ensure all changes comply with applicable laws and App Store guidelines.
+- If access to the repository is restricted, provide instructions for cloning or accessing the codebase.
+- For any ambiguities in the codebase or requirements, seek clarification before proceeding.
+
+## References
+
+- [Satella GitHub Repository](https://github.com/username/satella) (replace with actual URL).
+- [iOS Developer Documentation](https://developer.apple.com/documentation/).
+- [CocoaPods](https://cocoapods.org/) or [Swift Package Manager](https://swift.org/package-manager/) for dependency management.
+- [Apple StoreKit Documentation](https://developer.apple.com/documentation/storekit).
 
 ---
 
-**Last Updated**: May 03, 2025
+*Last Updated: May 03, 2025*
