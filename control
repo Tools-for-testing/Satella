@@ -1,12 +1,12 @@
 Package: emt.paisseon.satella
 Name: Satella
-Version: 1.8.1
-Architecture: iphoneos-arm
-Description: Modern in-app purchase cracker
+Version: 2.0.0
+Architecture: iphoneos-arm64
+Description: Modern in-app purchase cracker with iOS 16-18+ support
 Maintainer: Lilliana
 Author: Lilliana
 Section: Tweaks (Piracy)
-Depends: mobilesubstrate, firmware (>= 12.2), preferenceloader, com.opa334.altlist
+Depends: mobilesubstrate, firmware (>= 16.0), preferenceloader, com.opa334.altlist
 SileoDepiction: https://paisseon.github.io/depictions/Satella.json
 Depiction: https://pinpal.github.io/Sileo-Depiction-WebViews/?json=https://paisseon.github.io/depictions/Satella.json&name=Satella&dev=Lilliana
 Icon: https://paisseon.github.io/icons/Satella.png

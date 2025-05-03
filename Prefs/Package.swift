@@ -4,7 +4,7 @@ import Darwin.POSIX
 import PackageDescription
 
 let theosPath: String = .init(cString: getenv("HOME")) + "/theos"
-let minFirmware: String = "12.2"
+let minFirmware: String = "16.0"
 
 let swiftFlags: [String] = [
     "-F\(theosPath)/vendor/lib",
