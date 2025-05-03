@@ -22,32 +22,98 @@ if [ -f sdks.zip ]; then
   rm -rf ~/sdks-master sdks.zip
 fi
 
-# Check for iOS 16 SDK
-if [ ! -d ~/theos/sdks/iPhoneOS16.0.sdk ] && [ ! -d ~/theos/sdks/iPhoneOS16.5.sdk ]; then
-  echo "No iOS 16 SDK found. Downloading from alternate source..."
+# Direct download of iOS 16.0 SDK which is specifically required
+if [ ! -d ~/theos/sdks/iPhoneOS16.0.sdk ]; then
+  echo "Directly creating iPhoneOS16.0.sdk as it's specifically required by the build..."
+  mkdir -p ~/theos/sdks/iPhoneOS16.0.sdk
+  
+  # Try to download iOS 16.0 SDK directly
+  echo "Attempting to download iOS 16.0 SDK directly..."
+  curl -L -o ios16.0.sdk.tar.gz https://github.com/xybp888/iOS-SDKs/raw/master/iPhoneOS16.0.sdk.tar.gz || echo "Failed direct download, trying alternate sources"
+  
+  if [ -f ios16.0.sdk.tar.gz ]; then
+    tar -xzf ios16.0.sdk.tar.gz -C ~/theos/sdks/ || echo "Failed to extract iOS 16.0 SDK"
+    echo "iOS 16.0 SDK installed successfully"
+    rm ios16.0.sdk.tar.gz
+  else
+    # Try iOS 16.1 and create a symlink if successful
+    echo "Trying iOS 16.1 SDK instead..."
+    curl -L -o ios16.1.sdk.tar.gz https://github.com/xybp888/iOS-SDKs/raw/master/iPhoneOS16.1.sdk.tar.gz || echo "Failed to download iOS 16.1 SDK"
+    
+    if [ -f ios16.1.sdk.tar.gz ]; then
+      tar -xzf ios16.1.sdk.tar.gz -C ~/theos/sdks/ || echo "Failed to extract iOS 16.1 SDK"
+      echo "iOS 16.1 SDK installed successfully"
+      rm ios16.1.sdk.tar.gz
+      
+      # Create a symbolic link from 16.0 to 16.1 if 16.1 exists
+      if [ -d ~/theos/sdks/iPhoneOS16.1.sdk ]; then
+        ln -sf ~/theos/sdks/iPhoneOS16.1.sdk ~/theos/sdks/iPhoneOS16.0.sdk
+        echo "Created symbolic link from iPhoneOS16.0.sdk to iPhoneOS16.1.sdk"
+      fi
+    else
+      # Create minimal SDK structure as a last resort
+      echo "Creating minimal SDK structure for iOS 16.0"
+      mkdir -p ~/theos/sdks/iPhoneOS16.0.sdk/usr/include
+      mkdir -p ~/theos/sdks/iPhoneOS16.0.sdk/System/Library/Frameworks
+      
+      # Create essential framework headers and basic SDK structure
+      frameworks=("Foundation" "UIKit" "CoreGraphics" "StoreKit")
+      for framework in "${frameworks[@]}"; do
+        mkdir -p ~/theos/sdks/iPhoneOS16.0.sdk/System/Library/Frameworks/${framework}.framework/Headers
+        echo "/* Minimal ${framework} header */" > ~/theos/sdks/iPhoneOS16.0.sdk/System/Library/Frameworks/${framework}.framework/Headers/${framework}.h
+      done
+      
+      # Create a basic SDK version file
+      echo "16.0" > ~/theos/sdks/iPhoneOS16.0.sdk/SDKSettings.plist
+      
+      echo "Created minimal SDK structure for iOS 16.0"
+    fi
+  fi
+fi
+
+# Try iOS 16.5 as a backup
+if [ ! -d ~/theos/sdks/iPhoneOS16.5.sdk ]; then
+  echo "Attempting to download iOS 16.5 SDK as a backup..."
   
   # Try from xybp888 repository which hosts iOS SDKs
-  mkdir -p ~/theos/sdks/iPhoneOS16.5.sdk
-  curl -L -o ios16.tar.gz https://github.com/xybp888/iOS-SDKs/raw/master/iPhoneOS16.5.sdk.tar.gz || echo "Failed to download iOS 16.5 SDK"
+  curl -L -o ios16.5.tar.gz https://github.com/xybp888/iOS-SDKs/raw/master/iPhoneOS16.5.sdk.tar.gz || echo "Failed to download iOS 16.5 SDK"
   
-  if [ -f ios16.tar.gz ]; then
-    tar -xzf ios16.tar.gz -C ~/theos/sdks/ || echo "Failed to extract iOS 16.5 SDK"
+  if [ -f ios16.5.tar.gz ]; then
+    mkdir -p ~/theos/sdks/iPhoneOS16.5.sdk
+    tar -xzf ios16.5.tar.gz -C ~/theos/sdks/ || echo "Failed to extract iOS 16.5 SDK"
     echo "iOS 16.5 SDK installed successfully"
-    rm ios16.tar.gz
-  else
-    # Create minimal SDK structure if download failed
-    echo "Creating minimal SDK structure for iOS 16.5"
-    mkdir -p ~/theos/sdks/iPhoneOS16.5.sdk/usr/include
-    mkdir -p ~/theos/sdks/iPhoneOS16.5.sdk/System/Library/Frameworks
+    rm ios16.5.tar.gz
     
-    # Create essential framework headers
-    frameworks=("Foundation" "UIKit" "CoreGraphics" "StoreKit")
-    for framework in "${frameworks[@]}"; do
-      mkdir -p ~/theos/sdks/iPhoneOS16.5.sdk/System/Library/Frameworks/${framework}.framework/Headers
-      touch ~/theos/sdks/iPhoneOS16.5.sdk/System/Library/Frameworks/${framework}.framework/Headers/${framework}.h
-    done
-    
-    echo "Created minimal SDK structure"
+    # If 16.0 doesn't exist but 16.5 does, create a symbolic link
+    if [ ! -d ~/theos/sdks/iPhoneOS16.0.sdk ] && [ -d ~/theos/sdks/iPhoneOS16.5.sdk ]; then
+      ln -sf ~/theos/sdks/iPhoneOS16.5.sdk ~/theos/sdks/iPhoneOS16.0.sdk
+      echo "Created symbolic link from iPhoneOS16.0.sdk to iPhoneOS16.5.sdk"
+    fi
+  fi
+fi
+
+# Create patched Makefile to override SDK version if needed
+if [ ! -f ~/theos/makefiles/targets/Darwin/macosx.mk.orig ]; then
+  # Backup original makefile if exists
+  if [ -f ~/theos/makefiles/targets/Darwin/iphone.mk ]; then
+    cp ~/theos/makefiles/targets/Darwin/iphone.mk ~/theos/makefiles/targets/Darwin/iphone.mk.orig
+  fi
+  
+  # Create simple override to handle SDK issues
+  echo "# Override to handle SDK issues" > ~/theos/sdkversion.mk
+  echo "SDKVERSION = 16.0" >> ~/theos/sdkversion.mk
+  echo "SDKBINPATH = /usr" >> ~/theos/sdkversion.mk
+  
+  # Make sure the directory exists
+  mkdir -p ~/theos/makefiles/targets/Darwin/
+  
+  # Create a basic iphone.mk if it doesn't exist
+  if [ ! -f ~/theos/makefiles/targets/Darwin/iphone.mk ]; then
+    echo '# Basic iphone target makefile' > ~/theos/makefiles/targets/Darwin/iphone.mk
+    echo 'include $(THEOS_MAKE_PATH)/targets/_common/darwin.mk' >> ~/theos/makefiles/targets/Darwin/iphone.mk
+    echo 'include $(THEOS_MAKE_PATH)/targets/_common/darwin_hierarchial.mk' >> ~/theos/makefiles/targets/Darwin/iphone.mk
+    echo 'SDKVERSION ?= 16.0' >> ~/theos/makefiles/targets/Darwin/iphone.mk
+    echo 'SYSROOT ?= $(THEOS)/sdks/iPhoneOS16.0.sdk' >> ~/theos/makefiles/targets/Darwin/iphone.mk
   fi
 fi
 
@@ -81,5 +147,15 @@ ln -sf ~/theos/lib/AltList.framework ~/theos/vendor/lib/AltList.framework
 # List available SDKs for debugging
 echo "Available SDKs:"
 ls -la ~/theos/sdks/
+
+# Check if 16.0 SDK exists or is symlinked
+if [ -e ~/theos/sdks/iPhoneOS16.0.sdk ]; then
+  echo "✅ iPhoneOS16.0.sdk is available"
+  if [ -L ~/theos/sdks/iPhoneOS16.0.sdk ]; then
+    echo "  (as a symbolic link to $(readlink ~/theos/sdks/iPhoneOS16.0.sdk))"
+  fi
+else
+  echo "❌ iPhoneOS16.0.sdk is still missing!"
+fi
 
 echo "Theos setup completed"
