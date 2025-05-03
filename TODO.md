@@ -55,35 +55,25 @@ The following rules must be strictly adhered to for all code-related tasks:
   - **Code Quality**:
     - Refactor code to follow modern Objective-C or Swift best practices (e.g., use `@property` for safer access, adopt ARC fully if not already done).
     - Add comprehensive error handling for all API calls, network requests, and file operations.
-    - Implement logging with a configurable verbosity level (e.g., using `os_log` or a third-party library like `CocoaLumberjack`).
-    - Add unit tests using XCTest to cover critical functionality (e.g., IAP transaction handling).
+    - make sure that this works for any and all apps or atleast try to make this work for any and all apps. make sure we the dylib dont get spotted by jailbreak detection or anything else tbat would block this from working make sure you make this work completely.
   - **Security**:
     - Harden the dylib against reverse engineering (e.g., obfuscate sensitive strings, use runtime encryption for critical data).
     - Validate all inputs to prevent crashes or exploits (e.g., sanitize receipt data, check for null pointers).
-    - Ensure compliance with App Store guidelines for non-jailbroken use (e.g., avoid private APIs).
   - **Performance**:
     - Optimize hooks or patches to minimize runtime overhead (e.g., use efficient method swizzling techniques).
     - Cache frequently accessed data (e.g., receipt validation results) to reduce redundant computations.
     - Profile the dylib using Instruments to identify and fix performance bottlenecks.
   - **Documentation**:
     - Add inline comments for complex logic.
-    - Update or create a `README.md` with clear setup instructions, dependencies, and usage examples.
-    - Generate API documentation using tools like `jazzy` or `appledoc` if Swift or Objective-C is used.
 
 ### 4. Dependency Management
 - **Task**: Add or update dependencies to support new features or improve reliability.
 - **Steps**:
   - Identify outdated dependencies in the codebase (e.g., check versions in `Podfile`, `Cartfile`, or manual includes).
   - Update to the latest compatible versions, ensuring iOS 16+ compatibility.
-  - Consider adding new dependencies for enhanced functionality, such as:
-    - `CocoaLumberjack` for advanced logging.
-    - `Alamofire` for network requests (if applicable).
-    - `CryptoSwift` for encryption tasks.
-  - Use a dependency manager (e.g., CocoaPods, Swift Package Manager) to streamline integration.
-  - Document all dependencies in the `README.md`, including installation instructions.
+  - Consider adding new dependencies for enhanced functionality,
 - **Best Practices**:
   - Pin dependency versions to avoid breaking changes.
-  - Test dependencies in non-jailbroken environments to ensure compatibility.
 
 ### 5. Non-Jailbroken Compatibility
 - **Task**: Ensure the dylib functions seamlessly on non-jailbroken devices.
@@ -99,49 +89,11 @@ The following rules must be strictly adhered to for all code-related tasks:
   - Use entitlements sparingly and only as needed for legitimate functionality.
   - Test on physical devices running iOS 16, 17, and 18 to confirm compatibility.
 
-### 6. Build and Deployment
-- **Task**: Enhance the build process to ensure reliability and ease of deployment.
-- **Steps**:
-  - Update the `Makefile` or Xcode project to support modern build tools (e.g., `xcodebuild`, `cmake`).
-  - Add scripts for automated building, testing, and signing (e.g., `fastlane` integration).
-  - Ensure the dylib is compiled with optimizations enabled (`-O2` or equivalent).
-  - Create a CI/CD pipeline configuration (e.g., GitHub Actions) to run tests and build the dylib on each commit.
-  - Package the dylib with clear versioning (e.g., semantic versioning) and distribution instructions.
-- **Best Practices**:
-  - Include build-time checks for missing dependencies or misconfigurations.
-  - Provide a release checklist in the `README.md` for developers.
-
-### 7. Testing and Validation
-- **Task**: Implement comprehensive testing to ensure reliability and compatibility.
-- **Steps**:
-  - Write unit tests for all critical components (e.g., IAP transaction processing, receipt validation).
-  - Create integration tests to simulate real-world usage (e.g., mock StoreKit transactions).
-  - Test on multiple iOS versions (16, 17, 18) and device types (iPhone, iPad).
-  - Use tools like `XCUITest` for UI-related testing if the dylib interacts with app interfaces.
-  - Validate non-jailbroken compatibility by running tests in a clean, sandboxed environment.
-- **Best Practices**:
-  - Aim for at least 80% code coverage in unit tests.
-  - Automate test execution via CI/CD.
-  - Document test setup and execution instructions in the `README.md`.
-
 ## Deliverables
 
 1. **Updated Codebase**:
    - All modified or added files must be production-grade, fully implemented, and compatible with iOS 16 to 18 and above.
    - Include new dependencies, build scripts, and documentation as needed.
-
-2. **Analysis Report**:
-   - A detailed summary of the codebase analysis, including purpose, structure, and identified improvements.
-   - List of dependencies and their roles.
-
-3. **Changelog**:
-   - A `CHANGELOG.md` file documenting all changes, including fixes, enhancements, and new features.
-   - Follow semantic versioning for releases.
-
-4. **Documentation**:
-   - Updated `README.md` with setup, build, and usage instructions.
-   - API documentation for public interfaces (if applicable).
-   - Inline comments for complex logic.
 
 ## Constraints
 
@@ -150,20 +102,3 @@ The following rules must be strictly adhered to for all code-related tasks:
 - **Production-Grade**: All code must be robust, secure, and optimized for real-world use.
 - **No Simplified Code**: Avoid placeholders, stubs, or incomplete implementations.
 - **Repository Integrity**: Only use real files from the Satella repository or necessary external dependencies.
-
-## Notes
-
-- If the Satella repository involves ethically or legally sensitive functionality (e.g., bypassing IAP protections), ensure all changes comply with applicable laws and App Store guidelines.
-- If access to the repository is restricted, provide instructions for cloning or accessing the codebase.
-- For any ambiguities in the codebase or requirements, seek clarification before proceeding.
-
-## References
-
-- [Satella GitHub Repository](https://github.com/username/satella) (replace with actual URL).
-- [iOS Developer Documentation](https://developer.apple.com/documentation/).
-- [CocoaPods](https://cocoapods.org/) or [Swift Package Manager](https://swift.org/package-manager/) for dependency management.
-- [Apple StoreKit Documentation](https://developer.apple.com/documentation/storekit).
-
----
-
-*Last Updated: May 03, 2025*
