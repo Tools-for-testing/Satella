@@ -1,0 +1,109 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags (v1.0.0, v2.1.0, etc.)
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build-and-release:
+    name: Build and Release Satella
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      
+      - name: Set up environment
+        run: |
+          echo "THEOS=~/theos" >> $GITHUB_ENV
+          echo "PATH=$PATH:~/theos/bin" >> $GITHUB_ENV
+          
+          # Extract version from tag
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+          else
+            # If manually triggered without a tag, get version from control file
+            VERSION=$(grep "Version:" control | awk '{print $2}')
+          fi
+          
+          echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
+      
+      - name: Install dependencies
+        run: |
+          brew install ldid xz
+          sudo gem install ffi
+      
+      - name: Set up Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git ~/theos
+          curl -LO https://github.com/theos/sdks/archive/master.zip
+          unzip master.zip -d ~/
+          mv ~/sdks-master/*.sdk ~/theos/sdks/
+          rm -rf ~/sdks-master master.zip
+      
+      - name: Install Swift dependency - Jinx
+        run: |
+          cd Tweak
+          git clone --branch development https://github.com/Paisseon/Jinx.git ~/theos/vendor/Jinx
+          cp -R ~/theos/vendor/Jinx/Sources/Jinx ~/theos/vendor/lib/
+      
+      - name: Install AltList for preference bundle
+        run: |
+          git clone https://github.com/opa334/AltList.git ~/theos/vendor/AltList
+          mkdir -p ~/theos/lib/AltList.framework
+          cp -R ~/theos/vendor/AltList/AltList.framework/* ~/theos/lib/AltList.framework/
+          ln -sf ~/theos/lib/AltList.framework ~/theos/vendor/lib/AltList.framework
+      
+      - name: Build package
+        run: |
+          make package THEOS=~/theos
+      
+      - name: Prepare release files
+        run: |
+          mkdir -p build
+          cp packages/*.deb build/
+          mv build/*.deb build/Satella-${{ env.PACKAGE_VERSION }}.deb
+          
+          # Create a changelog
+          echo "# Satella ${{ env.PACKAGE_VERSION }}" > build/CHANGELOG.md
+          echo "" >> build/CHANGELOG.md
+          echo "## Changes in this version:" >> build/CHANGELOG.md
+          echo "- See commit history for detailed changes" >> build/CHANGELOG.md
+          echo "" >> build/CHANGELOG.md
+          echo "## Compatibility:" >> build/CHANGELOG.md
+          echo "- iOS 16.0 - 18.x+" >> build/CHANGELOG.md
+          echo "- Supports both jailbroken and non-jailbroken devices" >> build/CHANGELOG.md
+          echo "" >> build/CHANGELOG.md
+          echo "## Installation:" >> build/CHANGELOG.md
+          echo "1. Download the .deb file" >> build/CHANGELOG.md
+          echo "2. Install using Sileo, Zebra, or your preferred package manager" >> build/CHANGELOG.md
+          echo "3. For non-jailbroken devices, follow the sideloading instructions in the documentation" >> build/CHANGELOG.md
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Satella ${{ env.PACKAGE_VERSION }}
+          body_path: build/CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: |
+            build/Satella-${{ env.PACKAGE_VERSION }}.deb
+          
+      - name: Generate summary
+        run: |
+          echo "### Release created successfully! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "Satella v${{ env.PACKAGE_VERSION }} has been released and is available for download." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Download URL:** [GitHub Release](${{ steps.create_release.outputs.url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Compatibility:** iOS 16.0-18.x+" >> $GITHUB_STEP_SUMMARY
+          echo "**Architecture:** arm64, arm64e" >> $GITHUB_STEP_SUMMARY

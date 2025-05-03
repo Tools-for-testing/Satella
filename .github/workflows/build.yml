@@ -1,0 +1,83 @@
+name: Build Satella Dylib
+
+on:
+  push:
+    branches: [ emt, main, master ]
+  pull_request:
+    branches: [ emt, main, master ]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    name: Build Satella
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      
+      - name: Set up environment
+        run: |
+          echo "THEOS=~/theos" >> $GITHUB_ENV
+          echo "PATH=$PATH:~/theos/bin" >> $GITHUB_ENV
+      
+      - name: Install dependencies
+        run: |
+          brew install ldid xz
+          sudo gem install ffi
+      
+      - name: Set up Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git ~/theos
+          curl -LO https://github.com/theos/sdks/archive/master.zip
+          unzip master.zip -d ~/
+          mv ~/sdks-master/*.sdk ~/theos/sdks/
+          rm -rf ~/sdks-master master.zip
+      
+      - name: Install Swift dependency - Jinx
+        run: |
+          cd Tweak
+          git clone --branch development https://github.com/Paisseon/Jinx.git ~/theos/vendor/Jinx
+          cp -R ~/theos/vendor/Jinx/Sources/Jinx ~/theos/vendor/lib/
+      
+      - name: Install AltList for preference bundle
+        run: |
+          git clone https://github.com/opa334/AltList.git ~/theos/vendor/AltList
+          mkdir -p ~/theos/lib/AltList.framework
+          cp -R ~/theos/vendor/AltList/AltList.framework/* ~/theos/lib/AltList.framework/
+          ln -sf ~/theos/lib/AltList.framework ~/theos/vendor/lib/AltList.framework
+      
+      - name: Build package
+        run: |
+          make package THEOS=~/theos
+      
+      - name: Create release package
+        run: |
+          mkdir -p build
+          cp packages/*.deb build/
+          
+          # Get version from control file
+          VERSION=$(grep "Version:" control | awk '{print $2}')
+          echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
+          
+          # Rename package to include version
+          mv build/*.deb build/Satella-$VERSION.deb
+      
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Satella-${{ env.PACKAGE_VERSION }}
+          path: build/*.deb
+          if-no-files-found: error
+          
+      - name: Generate summary
+        run: |
+          echo "### Build completed successfully! :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+          echo "Satella v${{ env.PACKAGE_VERSION }} has been built and is available as an artifact." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Compatibility:** iOS 16.0-18.x+" >> $GITHUB_STEP_SUMMARY
+          echo "**Architecture:** arm64, arm64e" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To install, download the artifact and install it using your preferred package manager." >> $GITHUB_STEP_SUMMARY
