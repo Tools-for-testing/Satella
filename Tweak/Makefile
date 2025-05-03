@@ -1,9 +1,12 @@
 # Theos optimisations
 
-ARCHS = arm64
+ARCHS = arm64 arm64e
+
+# Set iOS 16.0 as the minimum target
+TARGET = iphone:clang:latest:16.0
 
 ifeq ($(ROOTLESS),1)
-	TARGET = iphone:clang:latest:15.0
+	TARGET = iphone:clang:latest:16.0
 endif
 
 # Processes die if they are killed
