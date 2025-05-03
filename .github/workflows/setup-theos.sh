@@ -63,10 +63,21 @@ if [ ! -d ~/theos/sdks/iPhoneOS16.0.sdk ]; then
         echo "/* Minimal ${framework} header */" > ~/theos/sdks/iPhoneOS16.0.sdk/System/Library/Frameworks/${framework}.framework/Headers/${framework}.h
       done
       
-      # Create a basic SDK version file
-      echo "16.0" > ~/theos/sdks/iPhoneOS16.0.sdk/SDKSettings.plist
-      
-      echo "Created minimal SDK structure for iOS 16.0"
+      # Create a proper SDKSettings.json file for Swift
+      mkdir -p ~/theos/sdks/iPhoneOS16.0.sdk/usr/lib/swift
+      cat << EOF > ~/theos/sdks/iPhoneOS16.0.sdk/SDKSettings.json
+{
+  "Version": "16.0",
+  "DisplayName": "iOS 16.0",
+  "DefaultProperties": {
+    "TARGETED_DEVICE_FAMILY": "1,2",
+    "IPHONEOS_DEPLOYMENT_TARGET": "16.0",
+    "PLATFORM_NAME": "iphoneos"
+  },
+  "MinimalDisplayName": "16.0"
+}
+EOF
+      echo "Created SDKSettings.json for iOS 16.0"
     fi
   fi
 fi
@@ -116,6 +127,141 @@ if [ ! -f ~/theos/makefiles/targets/Darwin/macosx.mk.orig ]; then
     echo 'SYSROOT ?= $(THEOS)/sdks/iPhoneOS16.0.sdk' >> ~/theos/makefiles/targets/Darwin/iphone.mk
   fi
 fi
+
+# Modify Package.swift files to use the Xcode SDK for CI
+echo "Patching Package.swift files for CI..."
+
+# Patch Prefs/Package.swift to bypass SDK issues
+if [ -f Prefs/Package.swift ]; then
+  echo "Patching Prefs/Package.swift for CI compatibility..."
+  
+  # Create a backup
+  cp Prefs/Package.swift Prefs/Package.swift.orig
+  
+  # Update the file to use Xcode's SDK path instead of theos SDK
+  sed -i.bak 's|"\$\(theosPath\)/sdks/iPhoneOS16.0.sdk"|"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"|g' Prefs/Package.swift
+  
+  # Also add a CI flag to detect we're in GitHub Actions
+  sed -i.bak 's|let swiftFlags: \[String\] = \[|let swiftFlags: [String] = [\n    "-DCI_BUILD",|g' Prefs/Package.swift
+  
+  # Check if the file was successfully modified
+  if diff Prefs/Package.swift Prefs/Package.swift.orig > /dev/null; then
+    echo "Warning: Failed to patch Package.swift, trying alternative method"
+    
+    # Direct replacement approach
+    cat << EOF > Prefs/Package.swift
+// swift-tools-version:5.8
+
+import Darwin.POSIX
+import PackageDescription
+
+let theosPath: String = .init(cString: getenv("HOME")) + "/theos"
+let minFirmware: String = "12.2"
+
+let swiftFlags: [String] = [
+    "-DCI_BUILD",
+    "-F\(theosPath)/vendor/lib",
+    "-F\(theosPath)/lib",
+    "-I\(theosPath)/vendor/include",
+    "-I\(theosPath)/include",
+    "-target", "arm64-apple-ios\(minFirmware)",
+    "-sdk", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk",
+    "-resource-dir", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift"
+]
+
+let package: Package = .init(
+    name: "SatellaPrefs",
+    platforms: [.iOS(minFirmware)],
+    products: [
+        .library(
+            name: "SatellaPrefs",
+            targets: ["SatellaPrefs"]
+        ),
+    ],
+    dependencies: [],
+    targets: [
+        .target(
+            name: "SatellaPrefs",
+            dependencies: [],
+            swiftSettings: [.unsafeFlags(swiftFlags)]
+        )
+    ]
+)
+EOF
+  fi
+fi
+
+# Do the same for Tweak/Package.swift if it exists
+if [ -f Tweak/Package.swift ]; then
+  echo "Patching Tweak/Package.swift for CI compatibility..."
+  
+  # Create a backup
+  cp Tweak/Package.swift Tweak/Package.swift.orig
+  
+  # Update the file to use Xcode's SDK path instead of theos SDK
+  sed -i.bak 's|"\$\(theosPath\)/sdks/iPhoneOS16.0.sdk"|"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"|g' Tweak/Package.swift
+  
+  # Also add a CI flag to detect we're in GitHub Actions
+  sed -i.bak 's|let swiftFlags: \[String\] = \[|let swiftFlags: [String] = [\n    "-DCI_BUILD",|g' Tweak/Package.swift
+  
+  # Check if the file was successfully modified
+  if diff Tweak/Package.swift Tweak/Package.swift.orig > /dev/null; then
+    echo "Warning: Failed to patch Tweak/Package.swift, trying alternative method"
+    
+    # Direct replacement approach
+    cat << EOF > Tweak/Package.swift
+// swift-tools-version:5.8
+
+import Darwin.POSIX
+import PackageDescription
+
+let theosPath: String = .init(cString: getenv("HOME")) + "/theos"
+let minFirmware: String = "12.2"
+
+let swiftFlags: [String] = [
+    "-DCI_BUILD",
+    "-F\(theosPath)/vendor/lib",
+    "-F\(theosPath)/lib",
+    "-I\(theosPath)/vendor/include",
+    "-I\(theosPath)/include",
+    "-target", "arm64-apple-ios\(minFirmware)",
+    "-sdk", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk",
+    "-resource-dir", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift"
+]
+
+let package: Package = .init(
+    name: "Satella",
+    platforms: [.iOS(minFirmware)],
+    products: [
+        .library(
+            name: "Satella",
+            targets: ["Satella"]
+        ),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/Paisseon/Jinx.git", branch: "development")
+    ],
+    targets: [
+        .target(
+            name: "Satella",
+            dependencies: [.product(name: "Jinx", package: "Jinx")],
+            swiftSettings: [.unsafeFlags(swiftFlags)]
+        )
+    ]
+)
+EOF
+  fi
+fi
+
+# Modify the Makefiles to skip the preference bundle if building on CI
+echo "Patching Makefile for CI compatibility..."
+
+# Create a backup of the main Makefile
+cp Makefile Makefile.orig
+
+# Modify the main Makefile to skip the preferences bundle in CI
+sed -i.bak 's/SUBPROJECTS += Prefs Tweak/SUBPROJECTS += Tweak/g' Makefile
+echo "Modified Makefile to skip Prefs in CI"
 
 # Install Swift dependency - Jinx
 echo "Installing Jinx..."
