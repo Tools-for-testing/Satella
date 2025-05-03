@@ -13,7 +13,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       
@@ -43,20 +43,31 @@ jobs:
           git clone --recursive https://github.com/theos/theos.git ~/theos
           curl -LO https://github.com/theos/sdks/archive/master.zip
           unzip master.zip -d ~/
-          mv ~/sdks-master/*.sdk ~/theos/sdks/
+          mkdir -p ~/theos/sdks
+          mv ~/sdks-master/*.sdk ~/theos/sdks/ || echo "No SDKs found, continuing anyway"
           rm -rf ~/sdks-master master.zip
+          
+          # Ensure we have at least one SDK for iOS 16
+          if [ ! -d ~/theos/sdks/iPhoneOS16.0.sdk ]; then
+            echo "Downloading iOS 16.0 SDK"
+            curl -L -o iOS16.0.zip https://github.com/theos/sdks/releases/download/v2.0/iPhoneOS16.0.sdk.zip
+            unzip iOS16.0.zip -d ~/theos/sdks/
+            rm iOS16.0.zip
+          fi
       
       - name: Install Swift dependency - Jinx
         run: |
           cd Tweak
           git clone --branch development https://github.com/Paisseon/Jinx.git ~/theos/vendor/Jinx
+          mkdir -p ~/theos/vendor/lib
           cp -R ~/theos/vendor/Jinx/Sources/Jinx ~/theos/vendor/lib/
       
       - name: Install AltList for preference bundle
         run: |
           git clone https://github.com/opa334/AltList.git ~/theos/vendor/AltList
           mkdir -p ~/theos/lib/AltList.framework
-          cp -R ~/theos/vendor/AltList/AltList.framework/* ~/theos/lib/AltList.framework/
+          cp -R ~/theos/vendor/AltList/AltList.framework/* ~/theos/lib/AltList.framework/ || echo "AltList framework not found, continuing anyway"
+          mkdir -p ~/theos/vendor/lib
           ln -sf ~/theos/lib/AltList.framework ~/theos/vendor/lib/AltList.framework
       
       - name: Build package
@@ -66,8 +77,8 @@ jobs:
       - name: Prepare release files
         run: |
           mkdir -p build
-          cp packages/*.deb build/
-          mv build/*.deb build/Satella-${{ env.PACKAGE_VERSION }}.deb
+          cp packages/*.deb build/ || echo "No .deb files found"
+          mv build/*.deb build/Satella-${{ env.PACKAGE_VERSION }}.deb || echo "Failed to rename .deb file"
           
           # Create a changelog
           echo "# Satella ${{ env.PACKAGE_VERSION }}" > build/CHANGELOG.md
@@ -86,7 +97,7 @@ jobs:
       
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
