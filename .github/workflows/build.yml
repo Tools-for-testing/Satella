@@ -49,7 +49,11 @@ jobs:
       
       - name: Build package
         run: |
-          make package THEOS=~/theos
+          # Make the CI build script executable
+          chmod +x .github/workflows/ci-build.sh
+          
+          echo "Running simplified CI build script instead of Theos build..."
+          .github/workflows/ci-build.sh
       
       - name: Create release package
         run: |
