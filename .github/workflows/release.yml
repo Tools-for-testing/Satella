@@ -35,7 +35,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          brew install ldid xz
+          brew install ldid xz gnu-ar
           sudo gem install ffi
       
       - name: Set up Theos and dependencies
